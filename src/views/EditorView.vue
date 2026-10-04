@@ -11,7 +11,7 @@ import { useEditor } from "../editor/useEditor";
 import { ENGINES } from "../engines";
 import { keyOf } from "../keys";
 import { saveFile } from "../storage";
-import { mode, statusVisible } from "../store";
+import { mode } from "../store";
 import { deleteDesign, designMono, designName, duplicateDesign, openDesign, openProject, plural, renameDesign, store } from "../store";
 import type { Design, EnumType, Project } from "../types";
 
@@ -186,7 +186,7 @@ function openDialog(d: "export" | "import") {
     </div>
 
     <div class="work">
-      <div :ref="setVp" class="viewport" tabindex="0" aria-label="Schema canvas. Drag to pan, Shift+drag to select, Ctrl+scroll to zoom." :style="{ backgroundSize: ed.gridSize.value + 'px ' + ed.gridSize.value + 'px', backgroundPosition: st.panX + 'px ' + st.panY + 'px' }" @mousedown="ed.vpDown" @wheel.prevent="ed.vpWheel" @contextmenu.prevent="ed.vpMenu" @pointerdown="ed.onPointerDown" @pointermove="ed.onPointerMove" @pointerup="ed.onPointerUp" @pointercancel="ed.onPointerUp">
+      <div :ref="setVp" class="viewport" tabindex="0" aria-label="Schema canvas. Drag to pan, Shift+drag to select, Ctrl+scroll to zoom." :style="{ backgroundSize: ed.gridSize.value + 'px ' + ed.gridSize.value + 'px', backgroundPosition: st.panX + 'px ' + st.panY + 'px' }" @mousedown="ed.vpDown" @wheel.prevent="ed.vpWheel" @contextmenu.prevent="ed.vpMenu" @mousemove="ed.trackCursor" @mouseleave="ed.trackCursor(null)" @pointerdown="ed.onPointerDown" @pointermove="ed.onPointerMove" @pointerup="ed.onPointerUp" @pointercancel="ed.onPointerUp">
         <div class="world" :style="{ transform: `translate(${st.panX}px, ${st.panY}px) scale(${st.zoom})` }">
           <svg v-for="r in edges" :key="r.id" class="edge" :class="r.cls" width="1" height="1" aria-hidden="true">
             <path class="e-hit" :d="r.d" @mousedown.stop="ed.selectRel($event, r.id)" @contextmenu.prevent.stop="ed.relMenu($event, r.id)" /><path class="e-line" :d="r.d" /><path class="e-mark" :d="r.marks" /><path class="e-opt" :d="r.opt" />
@@ -230,7 +230,7 @@ function openDialog(d: "export" | "import") {
         </div>
 
         <div v-if="!design.tables.length" class="canvas-empty">No tables yet. Press T or choose Add table to start.</div>
-        <svg v-if="design.tables.length && store.showMinimap && !store.zen" class="minimap" :style="{ right: ((mode !== 'wide' || store.zen) && ed.showInsp.value ? 312 : 12) + 'px' }" :viewBox="ed.miniBox.value.x + ' ' + ed.miniBox.value.y + ' ' + ed.miniBox.value.w + ' ' + ed.miniBox.value.h" preserveAspectRatio="none" aria-label="Overview. Click or drag to move the view." @mousedown.stop.prevent="ed.miniDown" @wheel.stop @contextmenu.prevent.stop>
+        <svg v-if="design.tables.length && store.showMinimap" class="minimap" :style="{ right: (mode !== 'wide' && ed.showInsp.value ? 312 : 12) + 'px' }" :viewBox="ed.miniBox.value.x + ' ' + ed.miniBox.value.y + ' ' + ed.miniBox.value.w + ' ' + ed.miniBox.value.h" preserveAspectRatio="none" aria-label="Overview. Click or drag to move the view." @mousedown.stop.prevent="ed.miniDown" @wheel.stop @contextmenu.prevent.stop>
           <rect v-for="t in design.tables" :key="t.id" class="mm-t" :class="{ on: ed.isSelected(t) }" :x="t.x" :y="t.y" :width="W" :height="tableHeight(t)" rx="8" />
           <rect class="mm-v" :x="ed.miniView.value.x" :y="ed.miniView.value.y" :width="ed.miniView.value.w" :height="ed.miniView.value.h" />
         </svg>
@@ -250,7 +250,7 @@ function openDialog(d: "export" | "import") {
     <div v-if="st.menu === 'issues'" class="pop issues tb-menu" role="menu" aria-label="Issues">
       <div class="pop-scroll"><button v-for="(p, i) in ed.problems.value" :key="i" class="pi" role="menuitem" @click="st.menu = null; ed.goProblem(p)">{{ p.text }}</button></div>
     </div>
-    <footer v-if="statusVisible" class="status">
+    <footer v-if="store.showStatus" class="status">
       <span>{{ ed.stats.value }}</span>
       <template v-if="ed.selText.value"><span class="vsep"></span><span>{{ ed.selText.value }}</span></template>
       <template v-if="st.notice"><span class="vsep"></span><span>{{ st.notice }}</span></template>

@@ -6,7 +6,7 @@ import ProjectSettingsDialog from "./components/ProjectSettingsDialog.vue";
 import SettingsDialog from "./components/SettingsDialog.vue";
 import TitleBar from "./components/TitleBar.vue";
 import { keyOf } from "./keys";
-import { currentDesign, currentProject, mode, store, theme, toggleFullscreen, toggleSidebar, toggleStatus, toggleZen } from "./store";
+import { currentDesign, currentProject, mode, store, theme, toggleAll, toggleFullscreen, togglePart } from "./store";
 import EditorView from "./views/EditorView.vue";
 import ProjectsView from "./views/ProjectsView.vue";
 import ProjectView from "./views/ProjectView.vue";
@@ -15,9 +15,10 @@ import ProjectView from "./views/ProjectView.vue";
 function onKey(e: KeyboardEvent) {
   const mod = e.ctrlKey || e.metaKey, k = keyOf(e);
   if (e.key === "F11") { e.preventDefault(); toggleFullscreen(); }
-  else if (mod && e.shiftKey && (k === "\\" || k === "/")) { e.preventDefault(); toggleStatus(); }
-  else if (mod && k === "\\") { e.preventDefault(); toggleZen(); }
-  else if (mod && !e.shiftKey && k === "b") { e.preventDefault(); if (store.zen) toggleZen(); else toggleSidebar(); }
+  else if (mod && ((e.shiftKey && k === "/") || (!e.shiftKey && k === "\\"))) { e.preventDefault(); toggleAll(); }
+  else if (mod && !e.shiftKey && k === "b") { e.preventDefault(); togglePart("showNav"); }
+  else if (mod && e.shiftKey && k === "t") { e.preventDefault(); togglePart("showToolbar"); }
+  else if (mod && e.shiftKey && k === "s") { e.preventDefault(); togglePart("showStatus"); }
   else if (mod && k === ",") { e.preventDefault(); store.settingsOpen = !store.settingsOpen; }
   // Never let the webview zoom the whole window; the editor handles these keys itself.
   else if (mod && (k === "=" || k === "+" || k === "-" || k === "0")) e.preventDefault();
@@ -37,14 +38,14 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="app" :class="['theme-' + theme, 'mode-' + mode, { zen: store.zen, fullscreen: store.fullscreen }]">
+  <div class="app" :class="['theme-' + theme, 'mode-' + mode, { 'no-nav': !store.showNav, 'no-toolbar': !store.showToolbar, fullscreen: store.fullscreen }]">
     <TitleBar v-if="!store.fullscreen" />
     <div v-if="store.error" class="errbar" role="alert"><span>{{ store.error }}</span><button @click="store.error = ''">Dismiss</button></div>
     <div v-if="store.ready" class="body">
       <FirstRun v-if="store.firstRun" />
       <template v-else>
-        <div v-if="mode === 'compact' && store.sbOverlay && !store.zen" class="sb-spacer"></div>
-        <AppSidebar v-if="!store.zen" />
+        <div v-if="mode === 'compact' && store.sbOverlay && store.showNav" class="sb-spacer"></div>
+        <AppSidebar v-if="store.showNav" />
         <EditorView v-if="store.view.name === 'editor' && currentProject && currentDesign" :key="currentDesign.id" :project="currentProject" :design="currentDesign" />
         <ProjectView v-else-if="store.view.name === 'project' && currentProject" :key="currentProject.id" :project="currentProject" :creating="store.view.creating" />
         <ProjectsView v-else />

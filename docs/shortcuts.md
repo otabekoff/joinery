@@ -13,7 +13,7 @@ Press `?` in the editor to see this list in the app.
 | `Ctrl+C` / `Ctrl+X` / `Ctrl+V` | Copy, cut, paste tables |
 | `Alt+↑` / `Alt+↓` | Move the selected column |
 | Arrow keys | Nudge tables (Shift for bigger steps) |
-| `N` | Add note |
+| `N` | Add note at the pointer |
 
 ## Selection
 | Key | Action |
@@ -34,16 +34,17 @@ Press `?` in the editor to see this list in the app.
 | `Shift+1` | Fit entire schema |
 | `Ctrl+Shift+L` | Auto layout |
 | `Ctrl+K` | Search tables and columns |
-| `M` | Show or hide the minimap |
 
 ## Window
 | Key | Action |
 |---|---|
 | `F11` | Full screen |
-| `Ctrl+\` | Hide or show the interface |
+| `Ctrl+Shift+/` or `Ctrl+\` | Hide or show the whole interface |
 | `Ctrl+B` | Navigation pane |
+| `Ctrl+Shift+T` | Toolbar |
 | `Ctrl+.` | Inspector |
-| `Ctrl+Shift+\` | Status bar |
+| `Ctrl+Shift+S` | Status bar |
+| `M` | Minimap |
 | `Ctrl+,` | Settings |
 
 ## General

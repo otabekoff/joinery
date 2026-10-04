@@ -31,7 +31,7 @@ A **project** is a folder on disk. It holds one or more **designs**, and each de
 - Drag the canvas to pan; Ctrl+scroll or pinch to zoom; `Shift+1` fits everything.
 - The minimap in the corner shows the whole schema; click or drag in it to jump.
 - `Ctrl+K` searches tables and columns.
-- `N` adds a note. Drag it by its top strip; hover to delete it.
+- `N` adds a note where the pointer is. Drag it by its top strip; hover to delete it.
 
 ### Checking your work
 When something would make the exported SQL wrong, the status bar shows a count of **issues**. Click it for the list; choosing an entry takes you to the table, column or relationship.
@@ -53,15 +53,18 @@ The **File** menu in the toolbar has:
 | Key | What it does |
 |---|---|
 | `F11` | Full screen |
-| `Ctrl+\` | Hide or show the interface, leaving only the canvas. The inspector still appears when you select something. |
+| `Ctrl+Shift+/` | Hide the whole interface, leaving only the canvas. Press again to bring back what was showing. (`Ctrl+\` does the same.) |
 | `Ctrl+B` | Navigation pane |
+| `Ctrl+Shift+T` | Toolbar |
 | `Ctrl+.` | Inspector |
-| `Ctrl+Shift+\` | Status bar. Also works while the interface is hidden. |
+| `Ctrl+Shift+S` | Status bar |
 | `M` | Minimap |
 | `Ctrl+,` | Settings |
 
+Each part can be shown or hidden on its own, also while the rest is hidden, and from *Settings → Show*.
+
 ## Settings
 
-*Settings* (bottom of the navigation pane, or `Ctrl+,`) covers the whole app: the theme, the status bar and minimap, whether pinch and Ctrl+scroll zoom the canvas, the engine preselected for new designs, and the default projects folder.
+*Settings* (bottom of the navigation pane, or `Ctrl+,`) covers the whole app: the theme, which parts of the interface are shown, whether pinch and Ctrl+scroll zoom the canvas, the engine preselected for new designs, and the default projects folder.
 
 *Project settings* (the gear on a project's page, or the ⋯ menu on the Projects page) belong to one project and are saved in its file: its name, the engine for its new designs, the order of its designs, and its folder.

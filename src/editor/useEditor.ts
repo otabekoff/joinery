@@ -43,7 +43,6 @@ export function useEditor(design: Design) {
     panX: 27,
     panY: 27,
     vp: { w: 907, h: 795 },
-    inspOpen: true,
     inspOverlay: false,
     search: { open: false, q: "", hi: 0 },
     picker: null as Picker | null,
@@ -126,7 +125,7 @@ export function useEditor(design: Design) {
     return { x: (vx - st.panX) / st.zoom, y: (vy - st.panY) / st.zoom, vx, vy };
   }
   // Width of the canvas that an overlaid inspector does not cover.
-  const usableW = () => Math.max(200, st.vp.w - ((mode.value !== "wide" || store.zen) && showInsp.value ? 300 : 0));
+  const usableW = () => Math.max(200, st.vp.w - (mode.value !== "wide" && showInsp.value ? 300 : 0));
   function fit(maxZ = 1.25) {
     autoView = true; lastMaxZ = maxZ;
     if (!design.tables.length) return;
@@ -249,7 +248,7 @@ export function useEditor(design: Design) {
     commit(() => { t.cols.push({ id: cid, name, type: "text", pk: false, nullable: true, unique: false, def: "" }); });
     closeTransient();
     st.sel = { kind: "column", t: tid, c: cid };
-    st.inspOpen = true; st.inspOverlay = true;
+    store.showInspector = true; st.inspOverlay = true;
     focusEl("#ci-name", true);
   }
   // Typing in a text field is not an undo step.
@@ -438,6 +437,19 @@ export function useEditor(design: Design) {
   }
 
   /* ---------- notes ---------- */
+  // Pointer position over the canvas (viewport pixels), and the last place it was clicked.
+  let cursor: { vx: number; vy: number } | null = null;
+  let lastClick: { vx: number; vy: number } | null = null;
+  function trackCursor(e: MouseEvent | null) {
+    if (!e || !vpEl.value) { cursor = null; return; }
+    const r = vpEl.value.getBoundingClientRect();
+    cursor = { vx: e.clientX - r.left, vy: e.clientY - r.top };
+  }
+  // Where a keyboard-created item should go: under the pointer, else at the last click.
+  function pointerSpot(): { x: number; y: number } | undefined {
+    const p = cursor || lastClick;
+    return p ? { x: (p.vx - st.panX) / st.zoom - 12, y: (p.vy - st.panY) / st.zoom - 8 } : undefined;
+  }
   function addNote(at?: { x: number; y: number }) {
     const id = crypto.randomUUID();
     const x = Math.round((at ? at.x : (usableW() / 2 - st.panX) / st.zoom - 90) / 4) * 4;
@@ -632,6 +644,7 @@ export function useEditor(design: Design) {
   function vpDown(e: MouseEvent) {
     if (e.button !== 0 && e.button !== 1) return;
     const w = toWorld(e);
+    lastClick = { vx: w.vx, vy: w.vy };
     if (st.entry) finishDraft();
     closeTransient();
     st.picker = null;
@@ -751,7 +764,7 @@ export function useEditor(design: Design) {
     st.located = null;
   }
   function focusRename() {
-    st.inspOpen = true; st.inspOverlay = true; st.cm = null;
+    store.showInspector = true; st.inspOverlay = true; st.cm = null;
     focusEl(st.sel && st.sel.kind === "column" ? "#ci-name" : "#ti-name", true);
   }
   function selectAll() { st.sel = { kind: "tables", ids: design.tables.map((t) => t.id) }; st.cm = null; }
@@ -776,7 +789,7 @@ export function useEditor(design: Design) {
     else if (mod && k === "v") { if (clipboard) { e.preventDefault(); paste(); } }
     else if (k === "?" || (e.shiftKey && !mod && e.code === "Slash")) { e.preventDefault(); st.help = true; }
     else if (mod && k === ".") { e.preventDefault(); if (showInsp.value) closeInsp(); else openInsp(); }
-    else if (!mod && !e.altKey && (k === "n" || k === "N")) { e.preventDefault(); addNote(); }
+    else if (!mod && !e.altKey && (k === "n" || k === "N")) { e.preventDefault(); addNote(pointerSpot()); }
     else if (!mod && !e.altKey && (k === "m" || k === "M")) { e.preventDefault(); store.showMinimap = !store.showMinimap; }
     else if (mod && k === "0") { e.preventDefault(); resetZoom(); }
     else if (mod && (k === "=" || k === "+")) { e.preventDefault(); zoomBy(1.2); }
@@ -951,13 +964,13 @@ export function useEditor(design: Design) {
     };
   });
 
-  // With the interface hidden the inspector simply follows the selection.
-  const showInsp = computed(() => !!st.sel && (store.zen ? true : mode.value === "wide" ? st.inspOpen : st.inspOverlay));
-  const showRail = computed(() => !!st.sel && !showInsp.value);
-  function openInsp() { if (mode.value === "wide") st.inspOpen = true; else st.inspOverlay = true; }
+  // Beside the canvas in a wide window; over it, and only when asked for, in a narrow one.
+  const showInsp = computed(() => !!st.sel && store.showInspector && (mode.value === "wide" || st.inspOverlay));
+  // The rail offers the inspector in a narrow window; when the inspector is switched off there is nothing to offer.
+  const showRail = computed(() => !!st.sel && store.showInspector && !showInsp.value);
+  function openInsp() { store.showInspector = true; st.inspOverlay = true; }
   function closeInsp() {
-    if (store.zen) st.sel = null;
-    else if (mode.value === "wide") st.inspOpen = false; else st.inspOverlay = false;
+    if (mode.value === "wide") store.showInspector = false; else st.inspOverlay = false;
     st.picker = null; st.dd = null;
   }
 
@@ -1103,7 +1116,7 @@ export function useEditor(design: Design) {
     undo, redo, fit, zoomBy, addTable, finishDraft, setTableName, addColumn, edit, moveColumn, toggleFlag, addIndex, toggleIndexCol, toggleIndexUnique, removeIndex,
     addEnum, removeEnum, setRelAction, importSql, resetZoom, changeEngine,
     miniBox, miniView, miniDown, selEnds, onEndDown, setRelOne, toManyToMany,
-    addNote, removeNote, onNoteDown, onPointerDown, onPointerMove, onPointerUp, problems, goProblem, isSelected: (t: Table) => tableCls(t).sel,
+    addNote, removeNote, onNoteDown, trackCursor, onPointerDown, onPointerMove, onPointerUp, problems, goProblem, isSelected: (t: Table) => tableCls(t).sel,
     deleteSel, setRelEnd, autoLayout, commitEntry,
     pickerView, chooseType, pickerKey, openDraftPicker, setEntryType, openInspPicker, draftPickUp,
     onHeadDown, onRowDown, onHandleDown, onRowEnter, onRowLeave, vpDown, vpWheel, vpMenu, tableMenu, relMenu, selectRel,

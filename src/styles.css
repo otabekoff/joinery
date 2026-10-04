@@ -377,8 +377,8 @@ textarea.code:focus{border-color:var(--accent)}
 .linkbtn.warn{color:var(--warn)}
 .issues{left:12px;bottom:32px;max-width:560px;z-index:60}
 .toast{position:absolute;left:50%;bottom:44px;transform:translateX(-50%);z-index:90;background:var(--text);color:var(--surface);font-size:12.5px;padding:7px 14px;border-radius:6px;box-shadow:var(--shadow-pop);pointer-events:none;white-space:nowrap}
-.zen .toolbar{display:none}
-.zen .main,.fullscreen .main{border-left:0;border-top-left-radius:0}
+.no-toolbar .toolbar{display:none}
+.no-nav .main,.fullscreen .main{border-left:0;border-top-left-radius:0}
 .nav-scroll{display:flex;flex-direction:column;gap:1px;min-height:0;overflow:auto;flex:0 1 auto}
 
 /* status bar */

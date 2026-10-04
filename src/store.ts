@@ -32,9 +32,10 @@ export const store = reactive({
   // Session-only view state
   // Pinch (trackpad or touch) and Ctrl+scroll zoom the canvas.
   pinchZoom: true,
-  zen: false,
-  // The status bar is hidden with the rest of the interface, and can be brought back on its own.
-  zenStatus: false,
+  // Each part of the interface can be shown or hidden on its own.
+  showNav: true,
+  showToolbar: true,
+  showInspector: true,
   fullscreen: false,
   settingsOpen: false,
   projectSettingsId: "",
@@ -109,6 +110,9 @@ export async function init() {
       store.showMinimap = s.showMinimap !== false;
       if (s.projectSort) store.projectSort = s.projectSort;
       store.pinchZoom = s.pinchZoom !== false;
+      store.showNav = s.showNav !== false;
+      store.showToolbar = s.showToolbar !== false;
+      store.showInspector = s.showInspector !== false;
     }
     if (onDisk && (!s || s.root == null)) {
       store.firstRun = true;
@@ -122,7 +126,7 @@ export async function init() {
   }
   store.ready = true;
   watch(() => store.projects, scheduleSave, { deep: true });
-  watch(() => [store.root, store.extra, store.themeOverride, store.sbCollapsed, store.defaultEngine, store.showStatus, store.showMinimap, store.projectSort, store.pinchZoom], saveSettings, { deep: true });
+  watch(() => [store.root, store.extra, store.themeOverride, store.sbCollapsed, store.defaultEngine, store.showStatus, store.showMinimap, store.projectSort, store.pinchZoom, store.showNav, store.showToolbar, store.showInspector], saveSettings, { deep: true });
   scheduleSave();
 }
 
@@ -149,7 +153,7 @@ export async function finishFirstRun(root: string) {
 async function saveSettings() {
   if (store.firstRun) return;
   try {
-    await storage.saveSettings({ root: store.root, extra: store.extra, theme: store.themeOverride, sbCollapsed: store.sbCollapsed, defaultEngine: store.defaultEngine, showStatus: store.showStatus, showMinimap: store.showMinimap, projectSort: store.projectSort, pinchZoom: store.pinchZoom });
+    await storage.saveSettings({ root: store.root, extra: store.extra, theme: store.themeOverride, sbCollapsed: store.sbCollapsed, defaultEngine: store.defaultEngine, showStatus: store.showStatus, showMinimap: store.showMinimap, projectSort: store.projectSort, pinchZoom: store.pinchZoom, showNav: store.showNav, showToolbar: store.showToolbar, showInspector: store.showInspector });
   } catch (e) {
     fail(e);
   }
@@ -193,16 +197,28 @@ export function toast(message: string) {
 }
 
 // Hides the navigation pane, toolbar and status bar so only the content is left.
-export const statusVisible = computed(() => (store.zen ? store.zenStatus : store.showStatus));
-export function toggleStatus() {
-  if (store.zen) store.zenStatus = !store.zenStatus;
-  else store.showStatus = !store.showStatus;
+const PARTS = ["showNav", "showToolbar", "showInspector", "showStatus", "showMinimap"] as const;
+type Part = (typeof PARTS)[number];
+// What was visible before "hide everything", so the same parts come back.
+let beforeHideAll: Record<Part, boolean> | null = null;
+
+export function togglePart(part: Part) {
+  store[part] = !store[part];
 }
 
-export function toggleZen() {
-  store.zen = !store.zen;
-  store.zenStatus = false;
-  if (store.zen) toast("Interface hidden · Ctrl+\\ shows it again");
+// Hides the navigation pane, toolbar, inspector, status bar and minimap in one go;
+// used again, it brings back whatever was showing before.
+export function toggleAll() {
+  const anyShown = PARTS.some((p) => store[p]);
+  if (anyShown) {
+    beforeHideAll = Object.fromEntries(PARTS.map((p) => [p, store[p]])) as Record<Part, boolean>;
+    PARTS.forEach((p) => { store[p] = false; });
+    toast("Interface hidden · Ctrl+Shift+/ shows it again");
+  } else {
+    const back = beforeHideAll;
+    PARTS.forEach((p) => { store[p] = back ? back[p] : true; });
+    beforeHideAll = null;
+  }
 }
 
 let wasMaximized = false;
@@ -282,6 +298,8 @@ export function openProject(projectId: string, creating = false) { store.view = 
 export function openDesign(projectId: string, designId: string) { store.view = { name: "editor", projectId, designId }; store.sbOverlay = false; }
 
 export function toggleSidebar() {
+  // The menu button brings a hidden navigation pane back before it collapses anything.
+  if (!store.showNav) { store.showNav = true; return; }
   if (mode.value === "compact") store.sbOverlay = !store.sbOverlay;
   else store.sbCollapsed = !store.sbCollapsed;
 }

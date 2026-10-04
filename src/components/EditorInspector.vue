@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { Editor } from "../editor/useEditor";
-import { mode, store } from "../store";
+import { mode } from "../store";
 import { family } from "../engines";
 import { FK_ACTIONS, type Rel, type Table } from "../types";
 import Icon from "./Icon.vue";
@@ -58,7 +58,7 @@ const ends = computed(() => {
 </script>
 
 <template>
-  <aside class="insp" :class="{ overlay: mode !== 'wide' || store.zen }" aria-label="Inspector">
+  <aside class="insp" :class="{ overlay: mode !== 'wide' }" aria-label="Inspector">
     <template v-if="table">
       <div class="insp-h">
         <span class="insp-k">Table</span><span class="grow"></span>

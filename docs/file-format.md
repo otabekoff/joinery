@@ -69,7 +69,8 @@ Column ids in `indexes[].cols` and in relationships are column `id`s, not names.
   "showStatus": true,
   "showMinimap": true,
   "projectSort": { "key": "modified", "desc": true },
-  "pinchZoom": true
+  "pinchZoom": true,
+  "showNav": true, "showToolbar": true, "showInspector": true
 }
 ```
 

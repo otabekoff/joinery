@@ -6,11 +6,12 @@
 - Trackpad pinch and two-finger touch now zoom the canvas. The webview was discarding pinch gestures before the app saw them.
 - Keyboard shortcuts work on non-Latin keyboard layouts such as Cyrillic (Ctrl+B, Ctrl+N, T, N and the rest).
 - Full screen from a maximized window no longer leaves an uncovered strip at the taskbar.
-- The status bar can be shown while the interface is hidden (Ctrl+Shift+\ or Ctrl+Shift+/).
+- `N` adds a note where the pointer is (or where the canvas was last clicked) instead of the middle of the view.
 - The Settings icon is a gear instead of a sun.
 - The app icon in the title bar lines up with the navigation pane's column.
 
 ### Added
+- The navigation pane (Ctrl+B), toolbar (Ctrl+Shift+T), inspector (Ctrl+.), status bar (Ctrl+Shift+S) and minimap (M) can each be shown or hidden on their own. Ctrl+Shift+/ hides or restores all of them.
 - Designs can be dragged into a new order in the navigation pane, not only on the project page.
 - Project settings (name, engine for new designs, order of designs, folder) have their own dialog on the project page.
 - A setting to turn pinch and Ctrl+scroll zoom off.

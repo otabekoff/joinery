@@ -31,8 +31,13 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey, true));
         <label class="pref"><span>Theme</span>
           <select class="selbox" :value="store.themeOverride || 'system'" @change="setTheme"><option value="system">Match Windows</option><option value="light">Light</option><option value="dark">Dark</option></select>
         </label>
-        <label class="pref"><span>Show the status bar <span class="kbd">Ctrl+Shift+\</span></span><input v-model="store.showStatus" type="checkbox" /></label>
-        <label class="pref"><span>Show the minimap in the editor <span class="kbd">M</span></span><input v-model="store.showMinimap" type="checkbox" /></label>
+
+        <h2>Show <span class="kbd">Ctrl+Shift+/ hides or shows all of these</span></h2>
+        <label class="pref"><span>Navigation pane <span class="kbd">Ctrl+B</span></span><input v-model="store.showNav" type="checkbox" /></label>
+        <label class="pref"><span>Toolbar <span class="kbd">Ctrl+Shift+T</span></span><input v-model="store.showToolbar" type="checkbox" /></label>
+        <label class="pref"><span>Inspector <span class="kbd">Ctrl+.</span></span><input v-model="store.showInspector" type="checkbox" /></label>
+        <label class="pref"><span>Status bar <span class="kbd">Ctrl+Shift+S</span></span><input v-model="store.showStatus" type="checkbox" /></label>
+        <label class="pref"><span>Minimap <span class="kbd">M</span></span><input v-model="store.showMinimap" type="checkbox" /></label>
 
         <h2>Canvas</h2>
         <label class="pref"><span>Zoom with pinch and Ctrl+scroll<span class="path">Trackpad pinch, two-finger touch, or Ctrl with the mouse wheel</span></span><input v-model="store.pinchZoom" type="checkbox" /></label>
