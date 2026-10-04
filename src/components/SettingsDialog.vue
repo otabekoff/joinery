@@ -42,6 +42,8 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey, true));
         <h2>Canvas</h2>
         <label class="pref"><span>Zoom with pinch and Ctrl+scroll<span class="path">Trackpad pinch, two-finger touch, or Ctrl with the mouse wheel</span></span><input v-model="store.pinchZoom" type="checkbox" /></label>
 
+        <label class="pref"><span>Mark where I click the canvas<span class="path">A brief ripple on empty canvas, where the next note or table will go</span></span><input v-model="store.clickRipple" type="checkbox" /></label>
+
         <h2>New designs</h2>
         <label class="pref"><span>Default database engine</span>
           <select v-model="store.defaultEngine" class="selbox"><option v-for="e in ENGINES" :key="e" :value="e">{{ e }}</option></select>

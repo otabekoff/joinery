@@ -51,7 +51,11 @@ export interface Note {
   x: number;
   y: number;
   text: string;
+  color?: NoteColor;
 }
+
+export const NOTE_COLORS = ["yellow", "blue", "green", "pink", "gray"] as const;
+export type NoteColor = (typeof NOTE_COLORS)[number];
 
 export interface EnumType {
   name: string;

@@ -348,7 +348,22 @@ textarea.code:focus{border-color:var(--accent)}
 .e-end{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--accent);cursor:grab;z-index:3}
 .e-end:hover{background:var(--accent)}
 .note{position:absolute;width:184px;background:var(--note);color:var(--note-text);border-radius:4px;box-shadow:var(--shadow);font-size:12px}
-.note-h{height:16px;background:var(--note-h);border-radius:4px 4px 0 0;cursor:grab;display:flex;justify-content:flex-end}
+.note-h{height:16px;background:var(--note-h);border-radius:4px 4px 0 0;cursor:grab;display:flex;align-items:center;justify-content:space-between}
+.note-cs{display:flex;gap:4px;padding-left:6px;opacity:0}
+.note:hover .note-cs{opacity:1}
+.note-c{width:9px;height:9px;border-radius:50%;border:1px solid rgba(0,0,0,.25);padding:0;cursor:default}
+.note-c.nc-yellow{background:#E8C84A}.note-c.nc-blue{background:#5B9BE8}.note-c.nc-green{background:#5BBE74}.note-c.nc-pink{background:#E86B9A}.note-c.nc-gray{background:#9AA1AB}
+.theme-light .note.nc-blue{--note:#DCEBFF;--note-h:#BFD8FB;--note-text:#0B2A4A}
+.theme-light .note.nc-green{--note:#DDF4DF;--note-h:#BFE6C3;--note-text:#12351A}
+.theme-light .note.nc-pink{--note:#FFE0EC;--note-h:#F8C2D6;--note-text:#4A1027}
+.theme-light .note.nc-gray{--note:#ECEEF1;--note-h:#D9DDE2;--note-text:#23272D}
+.theme-dark .note.nc-blue{--note:#1F3550;--note-h:#2A4666;--note-text:#D6E6FA}
+.theme-dark .note.nc-green{--note:#1F3F2A;--note-h:#2A5237;--note-text:#D5F0DB}
+.theme-dark .note.nc-pink{--note:#4A2333;--note-h:#5E2E42;--note-text:#F8D7E3}
+.theme-dark .note.nc-gray{--note:#33363B;--note-h:#42464C;--note-text:#E3E5E8}
+.ripple{position:absolute;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:50%;border:2px solid var(--accent);background:var(--accent-soft);pointer-events:none;animation:ripple .6s ease-out forwards}
+@keyframes ripple{from{transform:scale(.25);opacity:.9}to{transform:scale(1);opacity:0}}
+@media (prefers-reduced-motion:reduce){.ripple{animation-duration:.01s}}
 .note-x{width:16px;height:16px;border:0;background:transparent;color:inherit;padding:1px;opacity:0;display:grid;place-items:center;cursor:default}
 .note:hover .note-x{opacity:.7}
 .note textarea{display:block;width:100%;min-height:56px;field-sizing:content;resize:none;border:0;background:transparent;color:inherit;font:inherit;line-height:1.4;padding:6px 8px 8px;outline:none}

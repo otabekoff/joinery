@@ -49,7 +49,7 @@ Files are written to a temporary file first and then renamed into place, so a cr
           "one": false }                                   // optional: true for one-to-one
       ],
       "enums": [ { "name": "order_status", "values": ["pending", "paid"] } ],
-      "notes": [ { "id": "…", "x": 40, "y": 520, "text": "…" } ]
+      "notes": [ { "id": "…", "x": 40, "y": 520, "text": "…", "color": "yellow" } ]  // color is optional
     }
   ]
 }
@@ -70,7 +70,8 @@ Column ids in `indexes[].cols` and in relationships are column `id`s, not names.
   "showMinimap": true,
   "projectSort": { "key": "modified", "desc": true },
   "pinchZoom": true,
-  "showNav": true, "showToolbar": true, "showInspector": true
+  "showNav": true, "showToolbar": true, "showInspector": true,
+  "clickRipple": false
 }
 ```
 

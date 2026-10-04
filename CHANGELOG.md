@@ -3,6 +3,7 @@
 ## 1.0.1
 
 ### Fixed
+- With the whole interface hidden, selecting a table, column or relationship brings the inspector up again. In a narrow window the inspector opens on selection instead of waiting behind a rail, and a closed inspector always leaves a rail to reopen it.
 - Trackpad pinch and two-finger touch now zoom the canvas. The webview was discarding pinch gestures before the app saw them.
 - Keyboard shortcuts work on non-Latin keyboard layouts such as Cyrillic (Ctrl+B, Ctrl+N, T, N and the rest).
 - Full screen from a maximized window no longer leaves an uncovered strip at the taskbar.
@@ -11,6 +12,8 @@
 - The app icon in the title bar lines up with the navigation pane's column.
 
 ### Added
+- Notes come in five colors; hover a note and pick one from its top strip.
+- `T` adds a table near the pointer, like `N` does for notes. An optional ripple (Settings → Canvas) marks where the empty canvas was clicked.
 - The navigation pane (Ctrl+B), toolbar (Ctrl+Shift+T), inspector (Ctrl+.), status bar (Ctrl+Shift+S) and minimap (M) can each be shown or hidden on their own. Ctrl+Shift+/ hides or restores all of them.
 - Designs can be dragged into a new order in the navigation pane, not only on the project page.
 - Project settings (name, engine for new designs, order of designs, folder) have their own dialog on the project page.

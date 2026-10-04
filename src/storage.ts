@@ -21,6 +21,7 @@ export interface Settings {
   showNav?: boolean;
   showToolbar?: boolean;
   showInspector?: boolean;
+  clickRipple?: boolean;
 }
 
 const LS_SETTINGS = "joinery.settings";

@@ -36,6 +36,10 @@ export const store = reactive({
   showNav: true,
   showToolbar: true,
   showInspector: true,
+  // True between "hide everything" and bringing it back.
+  hiddenAll: false,
+  // Briefly mark where the empty canvas was clicked.
+  clickRipple: false,
   fullscreen: false,
   settingsOpen: false,
   projectSettingsId: "",
@@ -113,6 +117,7 @@ export async function init() {
       store.showNav = s.showNav !== false;
       store.showToolbar = s.showToolbar !== false;
       store.showInspector = s.showInspector !== false;
+      store.clickRipple = s.clickRipple === true;
     }
     if (onDisk && (!s || s.root == null)) {
       store.firstRun = true;
@@ -126,7 +131,7 @@ export async function init() {
   }
   store.ready = true;
   watch(() => store.projects, scheduleSave, { deep: true });
-  watch(() => [store.root, store.extra, store.themeOverride, store.sbCollapsed, store.defaultEngine, store.showStatus, store.showMinimap, store.projectSort, store.pinchZoom, store.showNav, store.showToolbar, store.showInspector], saveSettings, { deep: true });
+  watch(() => [store.root, store.extra, store.themeOverride, store.sbCollapsed, store.defaultEngine, store.showStatus, store.showMinimap, store.projectSort, store.pinchZoom, store.showNav, store.showToolbar, store.showInspector, store.clickRipple], saveSettings, { deep: true });
   scheduleSave();
 }
 
@@ -153,7 +158,7 @@ export async function finishFirstRun(root: string) {
 async function saveSettings() {
   if (store.firstRun) return;
   try {
-    await storage.saveSettings({ root: store.root, extra: store.extra, theme: store.themeOverride, sbCollapsed: store.sbCollapsed, defaultEngine: store.defaultEngine, showStatus: store.showStatus, showMinimap: store.showMinimap, projectSort: store.projectSort, pinchZoom: store.pinchZoom, showNav: store.showNav, showToolbar: store.showToolbar, showInspector: store.showInspector });
+    await storage.saveSettings({ root: store.root, extra: store.extra, theme: store.themeOverride, sbCollapsed: store.sbCollapsed, defaultEngine: store.defaultEngine, showStatus: store.showStatus, showMinimap: store.showMinimap, projectSort: store.projectSort, pinchZoom: store.pinchZoom, showNav: store.showNav, showToolbar: store.showToolbar, showInspector: store.showInspector, clickRipple: store.clickRipple });
   } catch (e) {
     fail(e);
   }
@@ -209,15 +214,16 @@ export function togglePart(part: Part) {
 // Hides the navigation pane, toolbar, inspector, status bar and minimap in one go;
 // used again, it brings back whatever was showing before.
 export function toggleAll() {
-  const anyShown = PARTS.some((p) => store[p]);
-  if (anyShown) {
+  if (!store.hiddenAll) {
     beforeHideAll = Object.fromEntries(PARTS.map((p) => [p, store[p]])) as Record<Part, boolean>;
     PARTS.forEach((p) => { store[p] = false; });
+    store.hiddenAll = true;
     toast("Interface hidden · Ctrl+Shift+/ shows it again");
   } else {
     const back = beforeHideAll;
     PARTS.forEach((p) => { store[p] = back ? back[p] : true; });
     beforeHideAll = null;
+    store.hiddenAll = false;
   }
 }
 

@@ -16,7 +16,7 @@ type PickerWhere = "draft" | "insp";
 type Picker = { where: PickerWhere; q: string; hi: number };
 type Drag =
   | { type: "move"; sx: number; sy: number; orig: { id: string; x: number; y: number }[]; before: string; moved: boolean }
-  | { type: "pan"; sx: number; sy: number; px: number; py: number; moved: boolean }
+  | { type: "pan"; sx: number; sy: number; px: number; py: number; vx: number; vy: number; left: boolean; moved: boolean }
   | { type: "marquee"; sx: number; sy: number }
   | { type: "mini" }
   | { type: "note"; id: string; sx: number; sy: number; ox: number; oy: number; before: string; moved: boolean }
@@ -43,7 +43,11 @@ export function useEditor(design: Design) {
     panX: 27,
     panY: 27,
     vp: { w: 907, h: 795 },
-    inspOverlay: false,
+    // In a narrow window the inspector lies over the canvas; false once it has been collapsed to the rail.
+    inspOverlay: true,
+    // With the whole interface hidden: the inspector was closed for the current selection.
+    inspDismissed: false,
+    ripple: null as { x: number; y: number; k: number } | null,
     search: { open: false, q: "", hi: 0 },
     picker: null as Picker | null,
     entry: null as { tid: string; name: string; type: string } | null,
@@ -125,7 +129,7 @@ export function useEditor(design: Design) {
     return { x: (vx - st.panX) / st.zoom, y: (vy - st.panY) / st.zoom, vx, vy };
   }
   // Width of the canvas that an overlaid inspector does not cover.
-  const usableW = () => Math.max(200, st.vp.w - (mode.value !== "wide" && showInsp.value ? 300 : 0));
+  const usableW = () => Math.max(200, st.vp.w - (inspOver.value && showInsp.value ? 300 : 0));
   function fit(maxZ = 1.25) {
     autoView = true; lastMaxZ = maxZ;
     if (!design.tables.length) return;
@@ -184,12 +188,13 @@ export function useEditor(design: Design) {
     st.past = []; st.future = []; st.picker = null; st.menu = null;
     touchDesign(design);
   }
-  function addTable(at?: { x: number; y: number }) {
+  // `at` is an exact position; `near` is where to start looking for free space (default: the middle of the view).
+  function addTable(at?: { x: number; y: number }, near?: { x: number; y: number }) {
     let n = 1;
     while (design.tables.some((t) => t.id === "table_" + n)) n++;
     const id = "table_" + n;
-    let x = at ? at.x : (usableW() / 2 - st.panX) / st.zoom - W / 2;
-    let y = at ? at.y : (st.vp.h / 2 - st.panY) / st.zoom - 70;
+    let x = at ? at.x : near ? near.x : (usableW() / 2 - st.panX) / st.zoom - W / 2;
+    let y = at ? at.y : near ? near.y : (st.vp.h / 2 - st.panY) / st.zoom - 70;
     x = Math.round(x / 4) * 4; y = Math.round(y / 4) * 4;
     if (!at) {
       const spot = freeSpot(x, y);
@@ -439,7 +444,7 @@ export function useEditor(design: Design) {
   /* ---------- notes ---------- */
   // Pointer position over the canvas (viewport pixels), and the last place it was clicked.
   let cursor: { vx: number; vy: number } | null = null;
-  let lastClick: { vx: number; vy: number } | null = null;
+  let lastClick: { x: number; y: number } | null = null;
   function trackCursor(e: MouseEvent | null) {
     if (!e || !vpEl.value) { cursor = null; return; }
     const r = vpEl.value.getBoundingClientRect();
@@ -447,8 +452,8 @@ export function useEditor(design: Design) {
   }
   // Where a keyboard-created item should go: under the pointer, else at the last click.
   function pointerSpot(): { x: number; y: number } | undefined {
-    const p = cursor || lastClick;
-    return p ? { x: (p.vx - st.panX) / st.zoom - 12, y: (p.vy - st.panY) / st.zoom - 8 } : undefined;
+    if (cursor) return { x: (cursor.vx - st.panX) / st.zoom - 12, y: (cursor.vy - st.panY) / st.zoom - 8 };
+    return lastClick ? { x: lastClick.x - 12, y: lastClick.y - 8 } : undefined;
   }
   function addNote(at?: { x: number; y: number }) {
     const id = crypto.randomUUID();
@@ -644,14 +649,14 @@ export function useEditor(design: Design) {
   function vpDown(e: MouseEvent) {
     if (e.button !== 0 && e.button !== 1) return;
     const w = toWorld(e);
-    lastClick = { vx: w.vx, vy: w.vy };
+    lastClick = { x: w.x, y: w.y };
     if (st.entry) finishDraft();
     closeTransient();
     st.picker = null;
     if (e.shiftKey && e.button === 0) {
       startDrag({ type: "marquee", sx: w.vx, sy: w.vy });
       st.marquee = { x: w.vx, y: w.vy, w: 0, h: 0 };
-    } else startDrag({ type: "pan", sx: e.clientX, sy: e.clientY, px: st.panX, py: st.panY, moved: false });
+    } else startDrag({ type: "pan", sx: e.clientX, sy: e.clientY, px: st.panX, py: st.panY, vx: w.vx, vy: w.vy, left: e.button === 0, moved: false });
   }
   function onDragMove(e: MouseEvent) {
     const d = drag;
@@ -683,13 +688,24 @@ export function useEditor(design: Design) {
       st.ghost.x = w.x; st.ghost.y = w.y;
     }
   }
+  let rippleTimer: number | undefined;
+  function showRipple(x: number, y: number) {
+    st.ripple = { x, y, k: Date.now() };
+    clearTimeout(rippleTimer);
+    rippleTimer = window.setTimeout(() => { st.ripple = null; }, 700);
+  }
   function onDragUp() {
     const d = drag;
     drag = null;
     stopDrag();
     if (pendingAdjust) { pendingAdjust = false; nextTick(adjustView); }
     if (!d) return;
-    if (d.type === "pan") { if (!d.moved) { st.sel = null; st.located = null; } }
+    if (d.type === "pan") {
+      if (!d.moved) {
+        st.sel = null; st.located = null;
+        if (store.clickRipple && d.left) showRipple(d.vx, d.vy);
+      }
+    }
     else if (d.type === "move") {
       if (d.moved) { st.past = st.past.concat([d.before]).slice(-100); st.future = []; touchDesign(design); }
     } else if (d.type === "marquee") {
@@ -798,7 +814,7 @@ export function useEditor(design: Design) {
     else if (e.shiftKey && e.code === "Digit1") { e.preventDefault(); fit(); }
     else if (k === "Delete" || k === "Backspace") { e.preventDefault(); deleteSel(); }
     else if (k === "Escape") { if (st.cm || st.dd || st.menu) closeTransient(); else { st.sel = null; st.located = null; } }
-    else if (!mod && !e.altKey && (k === "t" || k === "T")) { e.preventDefault(); addTable(); }
+    else if (!mod && !e.altKey && (k === "t" || k === "T")) { e.preventDefault(); addTable(undefined, pointerSpot()); }
     else if (k === "F2") { e.preventDefault(); if (st.sel) focusRename(); }
     else if ((k === "Enter" || k === " ") && target && target.dataset.tid) { e.preventDefault(); st.sel = { kind: "tables", ids: [target.dataset.tid] }; }
     else if (selT.length && (k === "ArrowLeft" || k === "ArrowRight" || k === "ArrowUp" || k === "ArrowDown")) {
@@ -964,13 +980,23 @@ export function useEditor(design: Design) {
     };
   });
 
-  // Beside the canvas in a wide window; over it, and only when asked for, in a narrow one.
-  const showInsp = computed(() => !!st.sel && store.showInspector && (mode.value === "wide" || st.inspOverlay));
-  // The rail offers the inspector in a narrow window; when the inspector is switched off there is nothing to offer.
-  const showRail = computed(() => !!st.sel && store.showInspector && !showInsp.value);
-  function openInsp() { store.showInspector = true; st.inspOverlay = true; }
+  // While something is selected the inspector sits beside the canvas (wide window) or over it
+  // (narrow window). With the whole interface hidden it comes up over the canvas for each new
+  // selection, and stays away for that selection once closed.
+  const showInsp = computed(() => !!st.sel && (store.hiddenAll ? !st.inspDismissed : store.showInspector && (mode.value === "wide" || st.inspOverlay)));
+  const inspOver = computed(() => store.hiddenAll || mode.value !== "wide");
+  // A slim rail to bring a closed inspector back with the mouse.
+  const showRail = computed(() => !!st.sel && !showInsp.value && !store.hiddenAll);
+  watch(() => st.sel, () => { st.inspDismissed = false; });
+  // Hiding everything also puts away the inspector for whatever is selected right now.
+  watch(() => store.hiddenAll, (hidden) => { if (hidden) st.inspDismissed = true; });
+  function openInsp() {
+    if (store.hiddenAll) st.inspDismissed = false;
+    else { store.showInspector = true; st.inspOverlay = true; }
+  }
   function closeInsp() {
-    if (mode.value === "wide") store.showInspector = false; else st.inspOverlay = false;
+    if (store.hiddenAll) st.inspDismissed = true;
+    else if (mode.value === "wide") store.showInspector = false; else st.inspOverlay = false;
     st.picker = null; st.dd = null;
   }
 
@@ -1122,7 +1148,7 @@ export function useEditor(design: Design) {
     onHeadDown, onRowDown, onHandleDown, onRowEnter, onRowLeave, vpDown, vpWheel, vpMenu, tableMenu, relMenu, selectRel,
     searchModel, matchParts, goResult, searchKey, searchInput, searchFocus,
     fkOf, selTable, selColumnRef, multi, relView, tableCls, colCls, colTip, edges, ghostView, menu,
-    showInsp, showRail, openInsp, closeInsp, indexes, selText, stats, gridSize,
+    showInsp, showRail, inspOver, openInsp, closeInsp, indexes, selText, stats, gridSize,
   };
 }
 

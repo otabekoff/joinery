@@ -55,6 +55,10 @@ export function diagramSvg(design: Design): { svg: string; width: number; height
     out.push("</g>");
   });
   notes.forEach((n) => {
+    // Each note carries its own color through CSS variables on its element.
+    const el = document.querySelector('.note[data-nid="' + n.id + '"]');
+    const ns = el ? getComputedStyle(el) : css;
+    const v = (name: string) => ns.getPropertyValue(name).trim();
     out.push(`<g transform="translate(${n.x} ${n.y})"><rect width="${NOTE_W}" height="${noteH(n.text)}" rx="4" fill="${v("--note")}"/><rect width="${NOTE_W}" height="16" rx="4" fill="${v("--note-h")}"/>`);
     noteLines(n.text).forEach((l, i) => out.push(`<text x="8" y="${34 + i * 17}" fill="${v("--note-text")}">${esc(l.trim())}</text>`));
     out.push("</g>");

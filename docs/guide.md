@@ -31,7 +31,7 @@ A **project** is a folder on disk. It holds one or more **designs**, and each de
 - Drag the canvas to pan; Ctrl+scroll or pinch to zoom; `Shift+1` fits everything.
 - The minimap in the corner shows the whole schema; click or drag in it to jump.
 - `Ctrl+K` searches tables and columns.
-- `N` adds a note where the pointer is. Drag it by its top strip; hover to delete it.
+- `N` adds a note where the pointer is, and `T` a table near it. Hover a note to change its color from the top strip. Drag it by its top strip; hover to delete it.
 
 ### Checking your work
 When something would make the exported SQL wrong, the status bar shows a count of **issues**. Click it for the list; choosing an entry takes you to the table, column or relationship.
@@ -62,6 +62,8 @@ The **File** menu in the toolbar has:
 | `Ctrl+,` | Settings |
 
 Each part can be shown or hidden on its own, also while the rest is hidden, and from *Settings → Show*.
+
+The **inspector** is the panel on the right that shows the selected table, column or relationship. It appears when you select something. Its collapse button (or `Ctrl+.`) puts it away and leaves a slim rail to bring it back. While the whole interface is hidden, it still comes up for each new selection.
 
 ## Settings
 

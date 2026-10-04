@@ -11,9 +11,8 @@ import { useEditor } from "../editor/useEditor";
 import { ENGINES } from "../engines";
 import { keyOf } from "../keys";
 import { saveFile } from "../storage";
-import { mode } from "../store";
 import { deleteDesign, designMono, designName, duplicateDesign, openDesign, openProject, plural, renameDesign, store } from "../store";
-import type { Design, EnumType, Project } from "../types";
+import { NOTE_COLORS, type Design, type EnumType, type Project } from "../types";
 
 const props = defineProps<{ project: Project; design: Design }>();
 const ed = useEditor(props.design);
@@ -191,8 +190,8 @@ function openDialog(d: "export" | "import") {
           <svg v-for="r in edges" :key="r.id" class="edge" :class="r.cls" width="1" height="1" aria-hidden="true">
             <path class="e-hit" :d="r.d" @mousedown.stop="ed.selectRel($event, r.id)" @contextmenu.prevent.stop="ed.relMenu($event, r.id)" /><path class="e-line" :d="r.d" /><path class="e-mark" :d="r.marks" /><path class="e-opt" :d="r.opt" />
           </svg>
-          <div v-for="n in design.notes || []" :key="n.id" class="note" :data-nid="n.id" :style="{ left: n.x + 'px', top: n.y + 'px' }" @mousedown.stop @contextmenu.stop>
-            <div class="note-h" title="Drag to move" @mousedown.stop="ed.onNoteDown($event, n)"><button class="note-x" aria-label="Delete note" title="Delete note" @mousedown.stop @click="ed.removeNote(n)"><Icon name="close" :size="14" /></button></div>
+          <div v-for="n in design.notes || []" :key="n.id" class="note" :class="'nc-' + (n.color || 'yellow')" :data-nid="n.id" :style="{ left: n.x + 'px', top: n.y + 'px' }" @mousedown.stop @contextmenu.stop>
+            <div class="note-h" title="Drag to move" @mousedown.stop="ed.onNoteDown($event, n)"><span class="note-cs"><button v-for="c in NOTE_COLORS" :key="c" class="note-c" :class="'nc-' + c" :aria-label="'Make note ' + c" :title="c" @mousedown.stop @click="ed.edit(n, { color: c })"></button></span><button class="note-x" aria-label="Delete note" title="Delete note" @mousedown.stop @click="ed.removeNote(n)"><Icon name="close" :size="14" /></button></div>
             <textarea aria-label="Note" placeholder="Note" spellcheck="false" :value="n.text" @input="ed.edit(n, { text: value($event) })" @wheel.stop></textarea>
           </div>
           <svg v-if="ghostView" class="edge" width="1" height="1" aria-hidden="true"><path class="ghost" :d="ghostView.d" /><circle class="ghost-end" :cx="ghostView.ex" :cy="ghostView.ey" r="3.5" /></svg>
@@ -230,10 +229,11 @@ function openDialog(d: "export" | "import") {
         </div>
 
         <div v-if="!design.tables.length" class="canvas-empty">No tables yet. Press T or choose Add table to start.</div>
-        <svg v-if="design.tables.length && store.showMinimap" class="minimap" :style="{ right: (mode !== 'wide' && ed.showInsp.value ? 312 : 12) + 'px' }" :viewBox="ed.miniBox.value.x + ' ' + ed.miniBox.value.y + ' ' + ed.miniBox.value.w + ' ' + ed.miniBox.value.h" preserveAspectRatio="none" aria-label="Overview. Click or drag to move the view." @mousedown.stop.prevent="ed.miniDown" @wheel.stop @contextmenu.prevent.stop>
+        <svg v-if="design.tables.length && store.showMinimap" class="minimap" :style="{ right: (ed.inspOver.value && ed.showInsp.value ? 312 : 12) + 'px' }" :viewBox="ed.miniBox.value.x + ' ' + ed.miniBox.value.y + ' ' + ed.miniBox.value.w + ' ' + ed.miniBox.value.h" preserveAspectRatio="none" aria-label="Overview. Click or drag to move the view." @mousedown.stop.prevent="ed.miniDown" @wheel.stop @contextmenu.prevent.stop>
           <rect v-for="t in design.tables" :key="t.id" class="mm-t" :class="{ on: ed.isSelected(t) }" :x="t.x" :y="t.y" :width="W" :height="tableHeight(t)" rx="8" />
           <rect class="mm-v" :x="ed.miniView.value.x" :y="ed.miniView.value.y" :width="ed.miniView.value.w" :height="ed.miniView.value.h" />
         </svg>
+        <div v-if="st.ripple" :key="st.ripple.k" class="ripple" :style="{ left: st.ripple.x + 'px', top: st.ripple.y + 'px' }"></div>
         <div v-if="st.marquee" class="marquee" :style="{ left: st.marquee.x + 'px', top: st.marquee.y + 'px', width: st.marquee.w + 'px', height: st.marquee.h + 'px' }"></div>
         <div v-if="menu" class="pop cmenu" role="menu" :aria-label="menu.label" :style="{ left: menu.x + 'px', top: menu.y + 'px' }" @mousedown.stop @wheel.stop @contextmenu.prevent.stop>
           <template v-for="(m, i) in menu.items" :key="i">
