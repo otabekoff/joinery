@@ -27,6 +27,11 @@ function onKey(e: KeyboardEvent) {
 onMounted(() => window.addEventListener("keydown", onKey, true));
 onBeforeUnmount(() => window.removeEventListener("keydown", onKey, true));
 const text = ref("");
+const backdrop = ref<HTMLElement | null>(null);
+function syncScroll(e: Event) {
+  const t = e.target as HTMLTextAreaElement;
+  if (backdrop.value) { backdrop.value.scrollTop = t.scrollTop; backdrop.value.scrollLeft = t.scrollLeft; }
+}
 const note = ref("");
 
 async function copy() {
@@ -61,7 +66,11 @@ function runImport() {
       </div>
       <div class="modal-b">
         <pre v-if="mode === 'export'" class="code" v-html="highlightSql(sql)"></pre>
-        <textarea v-else v-model="text" class="code" spellcheck="false" aria-label="SQL to import" placeholder="Paste CREATE TABLE statements here, or open a .sql file"></textarea>
+        <div v-else class="code-edit">
+          <!-- The textarea's own text is transparent; this layer underneath shows it in color. -->
+          <pre ref="backdrop" class="code" aria-hidden="true" v-html="highlightSql(text) + '\n'"></pre>
+          <textarea v-model="text" class="code" spellcheck="false" aria-label="SQL to import" placeholder="Paste CREATE TABLE statements here, or open a .sql file" @scroll="syncScroll"></textarea>
+        </div>
       </div>
       <div class="modal-f">
         <span>{{ note }}</span><span class="grow"></span>

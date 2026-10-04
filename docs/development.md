@@ -58,4 +58,4 @@ The installers are not code-signed. [signing.md](signing.md) lists the options.
 
 ## App icon
 
-The source is `src-tauri/app-icon.svg`. After changing it, render it to a 1024×1024 PNG and run `bun run tauri icon <that png>` to regenerate `src-tauri/icons/`.
+The source is `src-tauri/app-icon.svg`. After changing it, render it to a 1024×1024 PNG and run `bun run tauri icon <that png>` to regenerate `src-tauri/icons/`, then `node scripts/installer-images.mjs` to regenerate the pictures the installers show (`src-tauri/installer/`). The installer's name, publisher, description and license come from the `bundle` section of `src-tauri/tauri.conf.json`.

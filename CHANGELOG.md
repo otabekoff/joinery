@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.2
+
+### Fixed
+- The installers carry Joinery's own icon, images, publisher, description and license instead of the toolkit's defaults.
+
+### Added
+- The SQL import box highlights syntax as you type or paste, like the export view.
+
 ## 1.0.1
 
 ### Fixed

@@ -147,8 +147,13 @@ body{background:#202020}
 .modal-b{flex:1;min-height:0;overflow:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px}
 .modal-f{display:flex;align-items:center;gap:8px;flex:none;padding:10px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--text-2)}
 .code{margin:0;font-family:var(--mono);font-size:12px;line-height:1.5;white-space:pre;tab-size:2}
-textarea.code{min-height:320px;resize:vertical;border:1px solid var(--border);border-radius:6px;background:var(--surface-2);color:var(--text);padding:10px;outline:none}
-textarea.code:focus{border-color:var(--accent)}
+.code-edit{position:relative;flex:1;min-height:320px;border:1px solid var(--border);border-radius:6px;background:var(--surface-2);overflow:hidden}
+.code-edit:focus-within{border-color:var(--accent)}
+.code-edit .code{position:absolute;inset:0;margin:0;padding:10px;border:0;overflow:auto}
+.code-edit pre.code{overflow:hidden;pointer-events:none;color:var(--text)}
+.code-edit textarea.code{width:100%;height:100%;resize:none;background:transparent;color:transparent;caret-color:var(--text);outline:none}
+.code-edit textarea.code::placeholder{color:var(--text-3)}
+.code-edit textarea.code::selection{background:var(--accent-ring);color:transparent}
 .idxedit{display:flex;flex-direction:column;gap:6px;padding:6px 4px 10px 4px;border-bottom:1px solid var(--border-soft);margin-bottom:4px}
 .idxcols{display:flex;flex-wrap:wrap;gap:4px}
 .chip{height:22px;padding:0 7px;border:1px solid var(--border-2);border-radius:11px;background:transparent;color:var(--text-2);font-size:11px;cursor:default}
