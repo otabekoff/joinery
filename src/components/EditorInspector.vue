@@ -47,8 +47,12 @@ const ends = computed(() => {
     side("Source · foreign key", "from", "src", v.S, v.srcCol, v.rel),
     side("Target · referenced key", "to", "tgt", v.T, v.tgtCol, v.rel),
     { label: "On delete · On update", dds: [action("onDelete", "On delete"), action("onUpdate", "On update")] },
-    { label: "Type", dds: [{ key: "kind", aria: "Relationship type", value: v.rel.one ? "One to one" : "Many to one",
-      items: [false, true].map((one) => ({ id: String(one), label: one ? "One to one" : "Many to one", meta: one ? "foreign key is unique" : "", hi: !!v.rel.one === one, pick: () => props.ed.setRelOne(v.rel, one) })) }] },
+    { label: "Type", dds: [{ key: "kind", aria: "Relationship type", value: v.rel.one ? "One to one" : "One to many",
+      items: [
+        { id: "many", label: "One to many", meta: "one " + v.T.name + ", many " + v.S.name, hi: !v.rel.one, pick: () => props.ed.setRelOne(v.rel, false) },
+        { id: "one", label: "One to one", meta: "foreign key is unique", hi: !!v.rel.one, pick: () => props.ed.setRelOne(v.rel, true) },
+        { id: "m2m", label: "Many to many", meta: "adds a junction table", hi: false, pick: () => props.ed.toManyToMany(v.rel) },
+      ] }] },
   ];
 });
 </script>
@@ -148,7 +152,7 @@ const ends = computed(() => {
         </div>
         <div class="muted">{{ rel.card }}</div>
         <div class="muted">To reconnect, drag either round handle at the ends of the line onto another column.</div>
-        <button class="addrow" title="Replaces this relationship with a junction table that references both tables" @click="ed.toManyToMany(rel.rel)"><Icon name="addTable" :size="14" />Convert to many-to-many</button>
+
       </div>
     </template>
 

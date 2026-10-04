@@ -21,7 +21,7 @@ Download the installer from the [latest release](../../releases/latest):
 - `Joinery_<version>_x64-setup.exe` — the recommended installer
 - `Joinery_<version>_x64_en-US.msi` — for managed deployments
 
-The installers are not code-signed, so Windows SmartScreen shows a warning the first time. Choose **More info → Run anyway**.
+The installers are not code-signed, so Windows SmartScreen shows a warning the first time. Choose **More info → Run anyway**. [docs/signing.md](docs/signing.md) explains the options for signing, including the free ones.
 
 Joinery is built and tested on Windows 10 and 11. It needs the WebView2 runtime, which is already part of Windows 11 and current Windows 10.
 

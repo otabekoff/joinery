@@ -31,12 +31,10 @@ onBeforeUnmount(() => { unlisten?.(); unlistenClose?.(); });
 <template>
   <header class="titlebar" data-tauri-drag-region>
     <div class="tb-left" data-tauri-drag-region>
+      <div class="brand-ic" data-tauri-drag-region><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="1.5" width="7" height="5.5" rx="1.4" fill="var(--accent)" /><rect x="8" y="9" width="7" height="5.5" rx="1.4" fill="var(--accent)" opacity=".5" /><path d="M4.5 7v4.5H8" fill="none" stroke="var(--accent)" stroke-width="1.4" /></svg></div>
       <button v-if="store.zen" class="ibtn" aria-label="Show interface" title="Show interface (Ctrl+\)" @click="toggleZen"><Icon name="panel" /></button>
       <button v-else class="ibtn" aria-label="Toggle navigation pane" title="Toggle navigation pane (Ctrl+B)" @click="toggleSidebar"><Icon name="menu" /></button>
-      <div class="brand" data-tauri-drag-region>
-        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="1.5" width="7" height="5.5" rx="1.4" fill="var(--accent)" /><rect x="8" y="9" width="7" height="5.5" rx="1.4" fill="var(--accent)" opacity=".5" /><path d="M4.5 7v4.5H8" fill="none" stroke="var(--accent)" stroke-width="1.4" /></svg>
-        <span>Joinery</span>
-      </div>
+      <div class="brand" data-tauri-drag-region>Joinery</div>
       <template v-if="store.view.name === 'editor' && currentProject">
         <span class="crumb-sep">/</span>
         <button class="crumb" @click="openProject(currentProject.id)">{{ currentProject.name }}</button>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import Icon from "../components/Icon.vue";
+import { keyOf } from "../keys";
 import { createProject, deleteProject, formatModified, moveProject, onDisk, openProject, openProjectFolder, pickFolder, plural, previewPath, projectsSorted, renameProject, sortProjectsBy, store } from "../store";
 import type { Project, ProjectSortKey } from "../types";
 
@@ -62,7 +63,7 @@ async function confirmDelete(p: Project) {
   await deleteProject(p);
 }
 function onKey(e: KeyboardEvent) {
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "n") { e.preventDefault(); startNew(); }
+  if ((e.ctrlKey || e.metaKey) && keyOf(e) === "n") { e.preventDefault(); startNew(); }
   else if (e.key === "Escape") { menuFor.value = ""; deleting.value = ""; }
 }
 function onDocDown(e: MouseEvent) {
@@ -116,6 +117,7 @@ onBeforeUnmount(() => { window.removeEventListener("keydown", onKey); window.rem
             <button class="ibtn" :aria-label="'Actions for ' + p.name" title="More actions" aria-haspopup="menu" :aria-expanded="menuFor === p.id" @click="menuFor = menuFor === p.id ? '' : p.id"><Icon name="more" /></button>
             <div v-if="menuFor === p.id" class="pop rowpop" role="menu">
               <button class="pi" role="menuitem" @click="startRename(p)">Rename</button>
+              <button class="pi" role="menuitem" @click="menuFor = ''; store.projectSettingsId = p.id">Project settings…</button>
               <template v-if="onDisk">
                 <button class="pi" role="menuitem" @click="changeFolder(p)">Move to another folder…</button>
                 <div class="pathline" :title="p.path">&lrm;{{ p.path }}</div>

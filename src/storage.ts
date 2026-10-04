@@ -17,6 +17,7 @@ export interface Settings {
   showStatus?: boolean;
   showMinimap?: boolean;
   projectSort?: ProjectSort;
+  pinchZoom?: boolean;
 }
 
 const LS_SETTINGS = "joinery.settings";

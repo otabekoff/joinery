@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import Icon from "../components/Icon.vue";
+import { useDragOrder } from "../dragOrder";
+import { keyOf } from "../keys";
 import { ENGINES } from "../engines";
 import { createDesign, deleteDesign, designMono, designName, duplicateDesign, formatModified, moveDesign, openDesign, openProjects, plural, renameDesign, sortDesignsBy, sortedDesigns, store } from "../store";
 import type { Design, DesignSortKey, Project } from "../types";
@@ -24,41 +26,13 @@ const rows = computed(() => {
 const HEADS: { key: DesignSortKey; label: string; right?: boolean }[] = [{ key: "name", label: "Name" }, { key: "engine", label: "Engine" }, { key: "tables", label: "Tables", right: true }, { key: "modified", label: "Last modified", right: true }];
 const sortKey = computed(() => (props.project.sort ? props.project.sort.key : "custom"));
 
-/* Drag a row up or down to put the designs in an order of your own. */
-const drag = ref<{ id: string; to: number } | null>(null);
-let dragStart: { id: string; y: number } | null = null;
-let justDragged = false;
+// Drag a row up or down to put the designs in an order of your own.
+const order = useDragOrder(".lrow[data-did]", (id, to) => moveDesign(props.project, id, to));
 function rowDown(e: MouseEvent, d: Design) {
-  if (e.button !== 0 || q.value.trim()) return;
-  dragStart = { id: d.id, y: e.clientY };
-  window.addEventListener("mousemove", rowMove);
-  window.addEventListener("mouseup", rowUp);
-}
-function rowMove(e: MouseEvent) {
-  if (!dragStart) return;
-  if (!drag.value && Math.abs(e.clientY - dragStart.y) < 5) return;
-  const els = Array.from(document.querySelectorAll<HTMLElement>(".lrow[data-did]"));
-  // The gap the pointer is nearest to: before row 0, between rows, or after the last.
-  let to = els.length;
-  for (let i = 0; i < els.length; i++) {
-    const r = els[i].getBoundingClientRect();
-    if (e.clientY < r.top + r.height / 2) { to = i; break; }
-  }
-  drag.value = { id: dragStart.id, to };
-}
-function rowUp() {
-  window.removeEventListener("mousemove", rowMove);
-  window.removeEventListener("mouseup", rowUp);
-  const d = drag.value;
-  dragStart = null; drag.value = null;
-  if (!d) return;
-  moveDesign(props.project, d.id, d.to);
-  // The mouseup that ends a drag would otherwise open the design.
-  justDragged = true;
-  setTimeout(() => { justDragged = false; }, 0);
+  if (!q.value.trim()) order.down(e, d.id);
 }
 function open(d: Design) {
-  if (!justDragged) openDesign(props.project.id, d.id);
+  if (!order.wasDrag()) openDesign(props.project.id, d.id);
 }
 const focus = (sel: string) => nextTick(() => { const el = document.querySelector<HTMLInputElement>(sel); el?.focus(); el?.select(); });
 
@@ -86,7 +60,7 @@ function confirmRename(d: Design) {
   renaming.value = "";
 }
 function onKey(e: KeyboardEvent) {
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "n") { e.preventDefault(); startNew(); }
+  if ((e.ctrlKey || e.metaKey) && keyOf(e) === "n") { e.preventDefault(); startNew(); }
   else if (e.key === "Escape") { menuFor.value = ""; deleting.value = ""; }
 }
 function onDocDown(e: MouseEvent) {
@@ -111,6 +85,7 @@ onBeforeUnmount(() => { window.removeEventListener("keydown", onKey); window.rem
         <Icon name="search" class="s-ico" />
         <input v-model="q" class="tf" type="text" placeholder="Search designs" aria-label="Search designs" />
       </div>
+      <button class="ibtn" aria-label="Project settings" title="Project settings" @click="store.projectSettingsId = project.id"><Icon name="settings" /></button>
       <button class="btn primary" title="New database design (Ctrl+N)" @click="startNew"><Icon name="plus" />New design</button>
     </div>
     <div class="list" aria-label="Database designs">
@@ -136,7 +111,7 @@ onBeforeUnmount(() => { window.removeEventListener("keydown", onKey); window.rem
           <span class="r hint">Esc to cancel</span>
           <span></span>
         </div>
-        <div v-else class="lgrid designs lrow" :class="{ dragging: drag && drag.id === d.id, 'drop-before': drag && rows[drag.to] === d, 'drop-after': drag && drag.to === rows.length && rows[rows.length - 1] === d }" :data-did="d.id" @mousedown="rowDown($event, d)">
+        <div v-else class="lgrid designs lrow" :class="order.rowClass(d.id, rows.indexOf(d), rows.length)" :data-did="d.id" @mousedown="rowDown($event, d)">
           <button class="lname lopen" :title="'Open ' + d.name + ' in the editor. Drag to reorder.'" @click="open(d)"><span class="mono-ic">{{ designMono(d.name) }}</span><span class="t">{{ d.name }}</span></button>
           <span class="eng">{{ d.engine }}</span>
           <span class="r num">{{ d.tables.length }}</span>

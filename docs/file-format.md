@@ -68,7 +68,8 @@ Column ids in `indexes[].cols` and in relationships are column `id`s, not names.
   "defaultEngine": "PostgreSQL 18",
   "showStatus": true,
   "showMinimap": true,
-  "projectSort": { "key": "modified", "desc": true }
+  "projectSort": { "key": "modified", "desc": true },
+  "pinchZoom": true
 }
 ```
 

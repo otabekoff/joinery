@@ -54,7 +54,7 @@ cargo test --manifest-path src-tauri/Cargo.toml
    ```
 3. `.github/workflows/release.yml` builds the Windows installers and publishes a GitHub release with them attached.
 
-The installers are not code-signed. Signing needs a certificate; see the Tauri guide on [Windows code signing](https://tauri.app/distribute/sign/windows/).
+The installers are not code-signed. [signing.md](signing.md) lists the options.
 
 ## App icon
 

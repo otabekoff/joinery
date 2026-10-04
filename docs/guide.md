@@ -8,7 +8,7 @@ A **project** is a folder on disk. It holds one or more **designs**, and each de
 - **Open…** adds a project that already exists in another folder, for example one copied from a colleague.
 - The **⋯** menu on a project renames it, moves it to another folder or deletes it. Renaming also renames the folder when the folder was named after the project.
 - Inside a project, *New design* asks for a name and a database engine.
-- Click a column header to sort the designs. A third click returns to your own order, which you set by dragging rows up and down.
+- Click a column header to sort the designs. A third click returns to your own order, which you set by dragging rows up and down, here or in the navigation pane while a design is open.
 
 ## The editor
 
@@ -19,9 +19,9 @@ A **project** is a folder on disk. It holds one or more **designs**, and each de
 
 ### Relationships
 - Hover a column and drag the round handle at its right edge onto a column in another table. The tip tells you whether the types match.
-- Click a line to select it. The inspector shows both ends as dropdowns, the ON DELETE and ON UPDATE actions, and the type (many to one, or one to one).
+- Click a line to select it. The inspector shows both ends as dropdowns, the ON DELETE and ON UPDATE actions, and the type.
+- **Types**: *one to many* is the default (one customer, many orders). *One to one* makes the foreign key unique. *Many to many* replaces the relationship with a junction table referencing both sides. A relationship from a table to itself (an employee's manager) is drawn the same way: drag from one column to another column of the same table.
 - To **reconnect**, select the line and drag either round handle at its ends onto a different column.
-- *Convert to many-to-many* replaces the relationship with a junction table referencing both sides.
 
 ### Types
 - The **Types** button defines enum types and their values. They appear in the type picker as *Enums in this design*.
@@ -56,10 +56,12 @@ The **File** menu in the toolbar has:
 | `Ctrl+\` | Hide or show the interface, leaving only the canvas. The inspector still appears when you select something. |
 | `Ctrl+B` | Navigation pane |
 | `Ctrl+.` | Inspector |
-| `Ctrl+Shift+\` | Status bar |
+| `Ctrl+Shift+\` | Status bar. Also works while the interface is hidden. |
 | `M` | Minimap |
 | `Ctrl+,` | Settings |
 
 ## Settings
 
-*Settings* (bottom of the navigation pane) covers the theme, the status bar and minimap, the engine preselected for new designs, and the default projects folder. When a project is open it also shows that project's own settings: the engine for its new designs, and its folder.
+*Settings* (bottom of the navigation pane, or `Ctrl+,`) covers the whole app: the theme, the status bar and minimap, whether pinch and Ctrl+scroll zoom the canvas, the engine preselected for new designs, and the default projects folder.
+
+*Project settings* (the gear on a project's page, or the ⋯ menu on the Projects page) belong to one project and are saved in its file: its name, the engine for its new designs, the order of its designs, and its folder.

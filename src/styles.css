@@ -7,7 +7,8 @@ body{background:#202020}
 .theme-dark{color-scheme:dark;--syn-kw:#79C0FF;--syn-str:#7EE787;--syn-com:#8B949E;--syn-num:#FFA657;--syn-id:#D2A8FF;--note:#4A4420;--note-h:#5C5528;--note-text:#F6EFC6;--warn:#E2B04A;--chrome:#1C1D20;--chrome-2:#2C2E33;--surface:#26272B;--surface-2:#2D2F33;--canvas:#18191B;--dot:#303237;--border:#36383D;--border-soft:#2F3135;--border-2:#474A50;--text:#EDEEF0;--text-2:#B8BBC1;--text-3:#9A9EA6;--hover:rgba(255,255,255,.06);--press:rgba(255,255,255,.09);--accent:#5CC4F5;--accent-hover:#77CEF7;--on-accent:#06202E;--accent-text:#7FD0F7;--accent-soft:rgba(92,196,245,.13);--accent-ring:rgba(92,196,245,.28);--pk:#E2B04A;--fk:#4FC1C8;--line:#6E737B;--line-dim:#3E4146;--danger:#FF8F80;--ok:#6CCB5F;--shadow:0 1px 2px rgba(0,0,0,.45);--shadow-pop:0 10px 28px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.35);--focus:#FFFFFF}
 
 /* app feel: themed scrollbars, no accidental text selection */
-.app{user-select:none}
+/* Pinch only ever zooms the canvas, never the whole window. */
+.app{user-select:none;touch-action:pan-x pan-y}
 .app input,.app textarea,.app pre{user-select:text}
 .app ::-webkit-scrollbar{width:10px;height:10px}
 .app ::-webkit-scrollbar-thumb{background-color:var(--border-2);border-radius:5px;border:2px solid transparent;background-clip:padding-box}
@@ -24,8 +25,11 @@ body{background:#202020}
 
 /* window chrome */
 .titlebar{height:36px;flex:none;display:flex;align-items:center;user-select:none}
-.tb-left{display:flex;align-items:center;gap:2px;padding-left:4px;flex:1;min-width:0;align-self:stretch}
-.brand{display:flex;align-items:center;gap:8px;padding:0 6px 0 4px;font-size:12px;white-space:nowrap}
+.tb-left{display:flex;align-items:center;gap:2px;flex:1;min-width:0;align-self:stretch}
+/* Same width as the collapsed navigation pane, so the app icon sits in its column. */
+.brand-ic{width:48px;align-self:stretch;display:grid;place-items:center;flex:none}
+.brand-ic>*{pointer-events:none}
+.brand{display:flex;align-items:center;gap:8px;padding:0 6px 0 6px;font-size:12px;white-space:nowrap;align-self:stretch}
 .brand>*{pointer-events:none}
 .crumb{font-size:12px;color:var(--text-2);padding:3px 6px;border:0;border-radius:4px;background:transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default}
 .crumb:hover{background:var(--hover);color:var(--text)}
@@ -356,7 +360,9 @@ textarea.code:focus{border-color:var(--accent)}
 .hsort.r{justify-content:flex-end}
 .hsort:hover,.hsort.on{color:var(--text)}
 .hsort .flip{transform:rotate(180deg)}
-.lrow.dragging{opacity:.45}
+.lrow.dragging,.nav.dragging{opacity:.45}
+.nav.drop-before{box-shadow:inset 0 2px 0 var(--accent)}
+.nav.drop-after{box-shadow:inset 0 -2px 0 var(--accent)}
 .lrow.drop-before{box-shadow:inset 0 2px 0 var(--accent)}
 .lrow.drop-after{box-shadow:inset 0 -2px 0 var(--accent)}
 

@@ -1,5 +1,6 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, shallowRef, watch } from "vue";
 import { convertColumn, convertDesign } from "../convert";
+import { keyOf } from "../keys";
 import { family, idColumn, typeGroups as engineTypes } from "../engines";
 import { parseSql } from "../sql/import";
 import { mode, plural, store, touchDesign } from "../store";
@@ -693,6 +694,7 @@ export function useEditor(design: Design) {
     }
   }
   function vpWheel(e: WheelEvent) {
+    if ((e.ctrlKey || e.metaKey) && !store.pinchZoom) return;
     autoView = false;
     if (e.ctrlKey || e.metaKey) {
       const w = toWorld(e);
@@ -714,7 +716,7 @@ export function useEditor(design: Design) {
     const cur = Array.from(touches.values());
     autoView = false;
     if (cur.length === 1) { st.panX += e.clientX - old.x; st.panY += e.clientY - old.y; return; }
-    if (cur.length !== 2) return;
+    if (cur.length !== 2 || !store.pinchZoom) return;
     const r = vpEl.value.getBoundingClientRect();
     const dist = (p: { x: number; y: number }[]) => Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) || 1;
     const mid = (p: { x: number; y: number }[]) => ({ x: (p[0].x + p[1].x) / 2 - r.left, y: (p[0].y + p[1].y) / 2 - r.top });
@@ -757,7 +759,7 @@ export function useEditor(design: Design) {
   function onKey(e: KeyboardEvent) {
     const target = e.target as HTMLElement | null;
     const tag = ((target && target.tagName) || "").toLowerCase();
-    const k = e.key, mod = e.ctrlKey || e.metaKey;
+    const k = keyOf(e), mod = e.ctrlKey || e.metaKey;
     if (document.querySelector(".modal-back")) return;
     if (mod && (k === "k" || k === "f")) { e.preventDefault(); focusEl("#ed-search", true); return; }
     if (tag === "input" || tag === "textarea") return;
@@ -772,7 +774,7 @@ export function useEditor(design: Design) {
     else if (mod && k === "c") { if (selT.length) { e.preventDefault(); copy(); } }
     else if (mod && k === "x") { if (selT.length) { e.preventDefault(); cut(); } }
     else if (mod && k === "v") { if (clipboard) { e.preventDefault(); paste(); } }
-    else if (k === "?") { e.preventDefault(); st.help = true; }
+    else if (k === "?" || (e.shiftKey && !mod && e.code === "Slash")) { e.preventDefault(); st.help = true; }
     else if (mod && k === ".") { e.preventDefault(); if (showInsp.value) closeInsp(); else openInsp(); }
     else if (!mod && !e.altKey && (k === "n" || k === "N")) { e.preventDefault(); addNote(); }
     else if (!mod && !e.altKey && (k === "m" || k === "M")) { e.preventDefault(); store.showMinimap = !store.showMinimap; }
@@ -983,7 +985,7 @@ export function useEditor(design: Design) {
       rel: r, S, T,
       srcCol: sc ? sc.name : "?", tgtCol: tc ? tc.name : "?",
       srcText: S.name + "." + (sc ? sc.name : "?"), tgtText: T.name + "." + (tc ? tc.name : "?"),
-      card: (r.one ? "One " : "Many ") + S.name + " → one " + T.name + (sc && sc.nullable ? " · optional (nullable)" : " · required"),
+      card: (r.one ? "One " : "Many ") + S.name + " → one " + T.name + (sc && sc.nullable ? " · optional (nullable)" : " · required") + (S === T ? " · self-referencing" : ""),
     };
   });
 

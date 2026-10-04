@@ -2,21 +2,25 @@
 import { onBeforeUnmount, onMounted } from "vue";
 import AppSidebar from "./components/AppSidebar.vue";
 import FirstRun from "./components/FirstRun.vue";
+import ProjectSettingsDialog from "./components/ProjectSettingsDialog.vue";
 import SettingsDialog from "./components/SettingsDialog.vue";
 import TitleBar from "./components/TitleBar.vue";
-import { currentDesign, currentProject, mode, store, theme, toggleFullscreen, toggleSidebar, toggleZen } from "./store";
+import { keyOf } from "./keys";
+import { currentDesign, currentProject, mode, store, theme, toggleFullscreen, toggleSidebar, toggleStatus, toggleZen } from "./store";
 import EditorView from "./views/EditorView.vue";
 import ProjectsView from "./views/ProjectsView.vue";
 import ProjectView from "./views/ProjectView.vue";
 
 // Shortcuts that work on every screen.
 function onKey(e: KeyboardEvent) {
-  const mod = e.ctrlKey || e.metaKey;
+  const mod = e.ctrlKey || e.metaKey, k = keyOf(e);
   if (e.key === "F11") { e.preventDefault(); toggleFullscreen(); }
-  else if (mod && e.shiftKey && (e.key === "\\" || e.key === "|")) { e.preventDefault(); store.showStatus = !store.showStatus; }
-  else if (mod && e.key === "\\") { e.preventDefault(); toggleZen(); }
-  else if (mod && !e.shiftKey && e.key.toLowerCase() === "b") { e.preventDefault(); toggleSidebar(); }
-  else if (mod && e.key === ",") { e.preventDefault(); store.settingsOpen = !store.settingsOpen; }
+  else if (mod && e.shiftKey && (k === "\\" || k === "/")) { e.preventDefault(); toggleStatus(); }
+  else if (mod && k === "\\") { e.preventDefault(); toggleZen(); }
+  else if (mod && !e.shiftKey && k === "b") { e.preventDefault(); if (store.zen) toggleZen(); else toggleSidebar(); }
+  else if (mod && k === ",") { e.preventDefault(); store.settingsOpen = !store.settingsOpen; }
+  // Never let the webview zoom the whole window; the editor handles these keys itself.
+  else if (mod && (k === "=" || k === "+" || k === "-" || k === "0")) e.preventDefault();
 }
 // Ctrl+scroll and trackpad pinch must never zoom the whole window; the canvas handles its own zoom.
 function onWheel(e: WheelEvent) {
@@ -47,6 +51,7 @@ onBeforeUnmount(() => {
       </template>
     </div>
     <SettingsDialog v-if="store.settingsOpen" />
+    <ProjectSettingsDialog v-if="store.projectSettingsId" />
     <div v-if="store.toast" class="toast" role="status">{{ store.toast }}</div>
   </div>
 </template>

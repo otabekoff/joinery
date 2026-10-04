@@ -30,9 +30,14 @@ export const store = reactive({
   showMinimap: true,
   projectSort: { key: "modified", desc: true } as ProjectSort,
   // Session-only view state
+  // Pinch (trackpad or touch) and Ctrl+scroll zoom the canvas.
+  pinchZoom: true,
   zen: false,
+  // The status bar is hidden with the rest of the interface, and can be brought back on its own.
+  zenStatus: false,
   fullscreen: false,
   settingsOpen: false,
+  projectSettingsId: "",
   toast: "",
 });
 
@@ -103,6 +108,7 @@ export async function init() {
       store.showStatus = s.showStatus !== false;
       store.showMinimap = s.showMinimap !== false;
       if (s.projectSort) store.projectSort = s.projectSort;
+      store.pinchZoom = s.pinchZoom !== false;
     }
     if (onDisk && (!s || s.root == null)) {
       store.firstRun = true;
@@ -116,7 +122,7 @@ export async function init() {
   }
   store.ready = true;
   watch(() => store.projects, scheduleSave, { deep: true });
-  watch(() => [store.root, store.extra, store.themeOverride, store.sbCollapsed, store.defaultEngine, store.showStatus, store.showMinimap, store.projectSort], saveSettings, { deep: true });
+  watch(() => [store.root, store.extra, store.themeOverride, store.sbCollapsed, store.defaultEngine, store.showStatus, store.showMinimap, store.projectSort, store.pinchZoom], saveSettings, { deep: true });
   scheduleSave();
 }
 
@@ -143,7 +149,7 @@ export async function finishFirstRun(root: string) {
 async function saveSettings() {
   if (store.firstRun) return;
   try {
-    await storage.saveSettings({ root: store.root, extra: store.extra, theme: store.themeOverride, sbCollapsed: store.sbCollapsed, defaultEngine: store.defaultEngine, showStatus: store.showStatus, showMinimap: store.showMinimap, projectSort: store.projectSort });
+    await storage.saveSettings({ root: store.root, extra: store.extra, theme: store.themeOverride, sbCollapsed: store.sbCollapsed, defaultEngine: store.defaultEngine, showStatus: store.showStatus, showMinimap: store.showMinimap, projectSort: store.projectSort, pinchZoom: store.pinchZoom });
   } catch (e) {
     fail(e);
   }
@@ -187,16 +193,35 @@ export function toast(message: string) {
 }
 
 // Hides the navigation pane, toolbar and status bar so only the content is left.
+export const statusVisible = computed(() => (store.zen ? store.zenStatus : store.showStatus));
+export function toggleStatus() {
+  if (store.zen) store.zenStatus = !store.zenStatus;
+  else store.showStatus = !store.showStatus;
+}
+
 export function toggleZen() {
   store.zen = !store.zen;
+  store.zenStatus = false;
   if (store.zen) toast("Interface hidden · Ctrl+\\ shows it again");
 }
 
+let wasMaximized = false;
 export async function toggleFullscreen() {
   const on = !store.fullscreen;
   try {
-    if (onDisk) await getCurrentWindow().setFullscreen(on);
-    else if (on) await document.documentElement.requestFullscreen();
+    if (onDisk) {
+      // Going full screen from a maximized window leaves a strip uncovered at the taskbar,
+      // so restore the window first and maximize it again on the way back.
+      const w = getCurrentWindow();
+      if (on) {
+        wasMaximized = await w.isMaximized();
+        if (wasMaximized) await w.unmaximize();
+        await w.setFullscreen(true);
+      } else {
+        await w.setFullscreen(false);
+        if (wasMaximized) await w.maximize();
+      }
+    } else if (on) await document.documentElement.requestFullscreen();
     else await document.exitFullscreen();
     store.fullscreen = on;
     if (on) toast("Full screen · F11 leaves it");
@@ -234,6 +259,10 @@ export function sortDesignsBy(p: Project, key: DesignSortKey) {
   if (!cur || cur.key !== key) p.sort = { key, desc: false };
   else if (!cur.desc) p.sort = { key, desc: true };
   else p.sort = { key: "custom", desc: false };
+}
+export function sortDesignsTo(p: Project, key: DesignSortKey, desc: boolean) {
+  p.sort = { key, desc };
+  p.modified = Date.now();
 }
 // Moves a design to a new position; whatever order was on screen becomes the custom order.
 export function moveDesign(p: Project, id: string, toIndex: number) {

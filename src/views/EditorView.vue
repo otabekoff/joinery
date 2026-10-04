@@ -9,8 +9,9 @@ import { diagramPng, diagramSvg } from "../editor/image";
 import { W, tableHeight } from "../editor/geometry";
 import { useEditor } from "../editor/useEditor";
 import { ENGINES } from "../engines";
+import { keyOf } from "../keys";
 import { saveFile } from "../storage";
-import { mode } from "../store";
+import { mode, statusVisible } from "../store";
 import { deleteDesign, designMono, designName, duplicateDesign, openDesign, openProject, plural, renameDesign, store } from "../store";
 import type { Design, EnumType, Project } from "../types";
 
@@ -64,7 +65,7 @@ function finishRename(apply: boolean) {
   if (apply && n && n !== props.design.name) renameDesign(props.project, props.design, n);
 }
 function onShortcut(e: KeyboardEvent) {
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "n" && !document.querySelector(".modal-back")) { e.preventDefault(); openProject(props.project.id, true); }
+  if ((e.ctrlKey || e.metaKey) && keyOf(e) === "n" && !document.querySelector(".modal-back")) { e.preventDefault(); openProject(props.project.id, true); }
 }
 onMounted(() => window.addEventListener("keydown", onShortcut));
 onBeforeUnmount(() => window.removeEventListener("keydown", onShortcut));
@@ -249,7 +250,7 @@ function openDialog(d: "export" | "import") {
     <div v-if="st.menu === 'issues'" class="pop issues tb-menu" role="menu" aria-label="Issues">
       <div class="pop-scroll"><button v-for="(p, i) in ed.problems.value" :key="i" class="pi" role="menuitem" @click="st.menu = null; ed.goProblem(p)">{{ p.text }}</button></div>
     </div>
-    <footer v-if="store.showStatus && !store.zen" class="status">
+    <footer v-if="statusVisible" class="status">
       <span>{{ ed.stats.value }}</span>
       <template v-if="ed.selText.value"><span class="vsep"></span><span>{{ ed.selText.value }}</span></template>
       <template v-if="st.notice"><span class="vsep"></span><span>{{ st.notice }}</span></template>

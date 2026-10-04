@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.1
+
+### Fixed
+- Trackpad pinch and two-finger touch now zoom the canvas. The webview was discarding pinch gestures before the app saw them.
+- Keyboard shortcuts work on non-Latin keyboard layouts such as Cyrillic (Ctrl+B, Ctrl+N, T, N and the rest).
+- Full screen from a maximized window no longer leaves an uncovered strip at the taskbar.
+- The status bar can be shown while the interface is hidden (Ctrl+Shift+\ or Ctrl+Shift+/).
+- The Settings icon is a gear instead of a sun.
+- The app icon in the title bar lines up with the navigation pane's column.
+
+### Added
+- Designs can be dragged into a new order in the navigation pane, not only on the project page.
+- Project settings (name, engine for new designs, order of designs, folder) have their own dialog on the project page.
+- A setting to turn pinch and Ctrl+scroll zoom off.
+- "Many to many" is a choice in the relationship type list, next to one to many and one to one.
+
 ## 1.0.0
 
 First release.
