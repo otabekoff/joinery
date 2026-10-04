@@ -49,7 +49,7 @@ cargo test --manifest-path src-tauri/Cargo.toml
 1. Update the version in `package.json`, `src-tauri/Cargo.toml` and `src-tauri/tauri.conf.json`, and add a section to `CHANGELOG.md`.
 2. Commit, then tag and push:
    ```sh
-   git tag v1.0.1
+   git tag v1.1.0
    git push origin main --tags
    ```
 3. `.github/workflows/release.yml` builds the Windows installers and publishes a GitHub release with them attached.
