@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1B7BD6"/>
+      <stop offset="1" stop-color="#00478C"/>
+    </linearGradient>
+  </defs>
+  <rect x="64" y="64" width="896" height="896" rx="200" fill="url(#bg)"/>
+  <!-- Two tables joined by a relationship line: the app's mark. -->
+  <path d="M352 452v236h172" fill="none" stroke="#FFFFFF" stroke-opacity=".9" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="216" y="244" width="324" height="236" rx="56" fill="#FFFFFF"/>
+  <rect x="216" y="244" width="324" height="84" rx="42" fill="#CFE4F8"/>
+  <rect x="484" y="560" width="324" height="236" rx="56" fill="#FFFFFF" fill-opacity=".72"/>
+  <rect x="484" y="560" width="324" height="84" rx="42" fill="#FFFFFF" fill-opacity=".5"/>
+</svg>

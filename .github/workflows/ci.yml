@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: Type-check, test and build the interface
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun test
+      - run: bunx vite build
+
+  databases:
+    name: Run the exported SQL on real databases
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: joinery
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 20
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: joinery
+          MYSQL_DATABASE: joinery
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -pjoinery" --health-interval 5s --health-timeout 5s --health-retries 30
+      mariadb:
+        image: mariadb:11.8
+        env:
+          MARIADB_ROOT_PASSWORD: joinery
+          MARIADB_DATABASE: joinery
+        ports: ["3307:3306"]
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized" --health-interval 5s --health-timeout 5s --health-retries 30
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: Joinery-Passw0rd
+        ports: ["1433:1433"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - name: Generate a script for each engine
+        run: bun scripts/export-sample.ts sql-out
+      - name: PostgreSQL
+        env:
+          PGPASSWORD: joinery
+        run: psql -h localhost -U postgres -v ON_ERROR_STOP=1 -f sql-out/postgres.sql
+      - name: MySQL
+        run: mysql --protocol=tcp -h 127.0.0.1 -P 3306 -uroot -pjoinery joinery < sql-out/mysql.sql
+      - name: MariaDB
+        run: docker exec -i ${{ job.services.mariadb.id }} mariadb -uroot -pjoinery joinery < sql-out/mariadb.sql
+      - name: SQL Server
+        run: |
+          for i in $(seq 1 30); do
+            docker exec ${{ job.services.mssql.id }} /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P Joinery-Passw0rd -Q "SELECT 1" > /dev/null 2>&1 && break
+            sleep 2
+          done
+          docker cp sql-out/mssql.sql ${{ job.services.mssql.id }}:/tmp/mssql.sql
+          docker exec ${{ job.services.mssql.id }} /opt/mssql-tools18/bin/sqlcmd -C -b -S localhost -U sa -P Joinery-Passw0rd -d tempdb -i /tmp/mssql.sql
+      - name: SQLite
+        run: sqlite3 :memory: < sql-out/sqlite.sql
+
+  desktop:
+    name: Test and compile the desktop app
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: bun install --frozen-lockfile
+      # The Rust build embeds the built interface, so it has to exist first.
+      - run: bunx vite build
+      - run: cargo test --manifest-path src-tauri/Cargo.toml
