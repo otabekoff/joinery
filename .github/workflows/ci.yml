@@ -77,7 +77,8 @@ jobs:
           docker cp sql-out/mssql.sql ${{ job.services.mssql.id }}:/tmp/mssql.sql
           docker exec ${{ job.services.mssql.id }} /opt/mssql-tools18/bin/sqlcmd -C -b -S localhost -U sa -P Joinery-Passw0rd -d tempdb -i /tmp/mssql.sql
       - name: SQLite
-        run: sqlite3 :memory: < sql-out/sqlite.sql
+        run: |
+          sqlite3 scratch.db < sql-out/sqlite.sql
 
   desktop:
     name: Test and compile the desktop app
